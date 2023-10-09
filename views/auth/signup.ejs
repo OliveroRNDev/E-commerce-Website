@@ -1,0 +1,42 @@
+<%- include("../includes/head.ejs") %>
+<%- include("../includes/navigation.ejs") %>
+
+<body>
+    <form class="login-form" method="post" action="/signup" novalidate>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <% if (error) { %>
+        <div class="user-message user-message--error">
+            <%= error %>
+        </div>
+        <% } %>
+        <% if(oldInputs){ %>
+        <div class="form-control">
+            <label for="email">E-Mail</label>
+            <input type="email" name="email" value="<%= oldInputs.email %>">
+        </div>
+        <div class="form-control">
+            <label for="email">Password</label>
+            <input type="password" name="password" value="<%= oldInputs.password %>">
+        </div>
+        <div class="form-control">
+            <label for="email">Repeat Password</label>
+            <input type="password" name="confirmPassword" value="<%= oldInputs.confirmPassword %>">
+        </div>
+        <% } else { %>
+        <div class="form-control">
+            <label for="email">E-Mail</label>
+            <input type="email" name="email">
+        </div>
+        <div class="form-control">
+            <label for="email">Password</label>
+            <input type="password" name="password">
+        </div>
+        <div class="form-control">
+            <label for="email">Repeat Password</label>
+            <input type="password" name="confirmPassword">
+        </div>
+        <% } %>
+        <button type="submit" class="btn">Sign Up</button>
+    </form>
+</body>
+<%- include("../includes/end.ejs") %>

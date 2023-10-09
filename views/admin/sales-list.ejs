@@ -1,0 +1,49 @@
+<%- include('../includes/head.ejs') %>
+
+<body>
+    <%- include('../includes/navigation.ejs') %>
+    <% if (error) { %>
+    <div class="user-message user-message--error">
+        <%= error %>
+    </div>
+    <% } %>
+    <% if(sales.length>0){ %>
+    <div class="grid">
+        <% sales.forEach((sale)=>{ %>
+        <article class="card product-item">
+            <header class="card__header">
+                <h1 class="product__title">
+                    <%= sale.name %>
+                </h1>
+            </header>
+            <div class="card__content">
+                <p class="product__description">
+                    Da: <%= sale.startDate.toUTCString() %>
+                </p>
+                <p class="product__description">
+                    A: <%= sale.endDate.toUTCString() %>
+                </p>
+                <p class="product__description">
+                    Sale of <%= sale.sale %> <%= sale.saleType==='Percentage'?'%':'€' %>
+                </p>
+            </div>
+            <div class="card__actions">
+                <form method="POST" action="/admin/edit-sale/<%= sale._id %>">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button type="submit" class="btn">Edit</button>
+                </form>
+                <form method="POST" action="/admin/delete-sale/<%= sale._id %>"
+                    onsubmit="return confirm('Do you really want to delete the sale?');">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button class="btn danger">Delete</button>
+                </form>
+            </div>
+        </article>
+        <% }) %>
+    </div>
+    <% }else{ %>
+    <h1>No sales found!</h1>
+    <% } %>
+    </main>
+</body>
+<%- include('../includes/end.ejs') %>

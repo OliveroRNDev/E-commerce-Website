@@ -1,0 +1,37 @@
+<%- include("../includes/head.ejs") %>
+<%- include("../includes/navigation.ejs") %>
+
+<body>
+    <% if(product!==null && product!==undefined) { %>
+    <% console.log(product)%>
+    <% if(product.colors && product.colors.length>0){ %>
+    <div style="display: flex; flex-direction: row;">
+        <% product.colors.forEach(color=>{%>
+        <form method="POST" class="product-form" action="/admin/product-color-delete/<%= product._id%>" novalidate>
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <input type="hidden" name="color" value="<%= color %>">
+            <div style="padding:10px;">
+                <input type="color" value="<%= color %>" disabled />
+                <button class="btn danger">
+                    Delete
+                </button>
+            </div>
+        </form>
+    </div>
+    <%})%>
+    <% }else{ %>
+    <h1>Colors not present!</h1>
+    <%}%>
+        <form method="POST" class="product-form" action="/admin/product-color/<%= product._id%>" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div style="padding:10px;">
+        <input type="color" name="color" />
+        <button type="submit" class="btn">Add color</button>
+    </div>
+    </form>
+    </form>
+    <% } else { %>
+    <h1>Product not present!</h1>
+    <% } %>
+</body>
+<%- include("../includes/end.ejs") %>

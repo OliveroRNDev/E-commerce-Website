@@ -1,0 +1,63 @@
+<%- include('../includes/head.ejs') %>
+
+<body>
+    <%- include('../includes/navigation.ejs') %>
+    <% if (error) { %>
+    <div class="user-message user-message--error">
+        <%= error %>
+    </div>
+    <% } %>
+    <form method="POST" class="product-form" action="/admin/logos" novalidate enctype="multipart/form-data">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="form-control">
+            <label for="image">Image</label>
+            <input type="file" name="image">
+        </div>
+        <div class="form-control">
+            <label for="name">Name:</label>
+            <input type="text" name="name" value="<%= oldInputs?oldInputs.name:null %>">
+        </div>
+        <div class="form-control">
+            <label for="description">Description</label>
+            <input type="text" name="description" value="<%= oldInputs?oldInputs.description:null %>">
+        </div>
+        <button type="submit" class="btn">Add</button>
+    </form>
+    <% if(images!==null && images!==undefined && images.length>0) { %>
+    <div class="grid">
+        <% images.forEach((image)=>{ %>
+        <% console.log(image) %>
+        <article class="card product-item-logos">
+            <header class="card__header">
+                <h1 class="product__title">
+                    <%= image.name %>
+                </h1>
+            </header>
+            <div class="card__image__logo">
+                <img src="/<%= image.images.key %>">
+            </div>
+            <div class="card__content">
+                <p class="product__description">
+                    <%= image.description %>
+                </p>
+            </div>
+            <div class="card__actions">
+                <form method="POST" action="/admin/edit-logo/<%= image._id %>">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button class="btn">Edit</button>
+                </form>
+                <form method="POST" onsubmit="return confirm('Do you really want to delete the logo?');"
+                    action="/admin/delete-logos/<%= image._id %>">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button class="btn danger">Delete</button>
+                </form>
+            </div>
+        </article>
+
+
+        <% }) %>
+    </div>
+    <% } else { %>
+    <h1>No products found!</h1>
+    <% } %>
+    <%- include('../includes/end.ejs') %>

@@ -1,0 +1,419 @@
+<%- include('../includes/head.ejs') %>
+
+<body>
+    <%- include('../includes/navigation.ejs') %>
+    <% if (error) { %>
+    <div class="user-message user-message--error">
+        <%= error %>
+    </div>
+    <% } %>
+    <% if(edit) { %>
+    <%console.log('edit') %>
+    <form method="POST" class="product-form" action="/admin/products" novalidate enctype="multipart/form-data">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="form-control">
+            <label for="title">Title</label>
+            <input type="text" name="title" value="<%= oldInputs?oldInputs.title:product.title %>">
+        </div>
+        <div class="form-control">
+            <label for="image">Image</label>
+            <input type="file" name="image" multiple>
+        </div>
+        <div style="display: flex; flex-direction: row;">
+            <% if(product.colors && product.colors.length>0){ %>
+            <select name="colors" id="colors" onchange="onChangeColor()">
+                <%let count=0; product.colors.forEach(color=>{%>
+                <option value="<%=color%>">
+                    <%=color%>
+                </option>
+                <%count++;})%>
+            </select>
+            <input type="color" name="colors_display" disabled />
+            <% } %>
+            <a href="/admin/product-color/<%= product._id %>" class="btn">Add color</a>
+        </div>
+        <div style="display: flex; flex-direction: row;">
+            <% if(product.sizes && product.sizes.length>0){ %>
+            <select name="sizes" id="sizes" onchange="onChangeSize()">
+                <%let count=0; product.sizes.forEach(size=>{%>
+                <option value="<%=size%>">
+                    <%=size%>
+                </option>
+                <%count++;})%>
+            </select>
+            <% } %>
+            <a href="/admin/product-size/<%= product._id %>" class="btn">Add size</a>
+        </div>
+        <!-- <input type="text" name="imageUrl" value="<%= oldInputs?oldInputs.imageUrl:product.imageUrl %>"> -->
+        <% if(category!==null && category!==undefined && category.length>0) { %>
+        <div class="form-control">
+            <label for="category">Choose a category:</label>
+            <select name="category" id="category" onchange="onChange()">
+                <% category.forEach((image)=>{ %>
+                <% console.log(selectedCategory+'==='+image._id) %>
+                <% if(selectedCategory){%>
+                <% if(selectedCategory===image._id.toString()){ %>
+                <option value="<%= image._id %>" selected>
+                    <%= image.name %>
+                    /option>
+                    <% } else { %>
+                <option value="<%= image._id %>">
+                    <%= image.name %>
+                </option>
+                <% } %>
+                <% }else{ %>
+                <% if(product.category===image._id.toString()){ %>
+                <option value="<%= image._id %>" selected>
+                    <%= image.name %>
+                </option>
+                <% } else { %>
+                <option value="<%= image._id %>">
+                    <%= image.name %>
+                </option>
+                <% } %>
+                <% } %>
+                <% }) %>
+            </select>
+        </div>
+        <% } %>
+        <% if(category){ %>
+        <div class="form-control">
+            <label for="subcategory">Choose a subcategory:</label>
+            <% category.forEach((singleCategory)=>{ %>
+            <% if(singleCategory.subcategory.length>0){ %>
+            <% console.log(singleCategory.subcategory.filter((element)=>
+                                        element._id.toString()===(selectedSubcategory?selectedSubcategory:product.subcategory))) %>
+            <% if(singleCategory.subcategory.filter((element)=> element._id.toString()===(selectedSubcategory?selectedSubcategory:product.subcategory)).length>0) { %>
+            <select name="singleCategory" id="<%= singleCategory._id %>">
+                <% singleCategory.subcategory.forEach((subcategory)=>{ %>
+                <% if(selectedSubcategory){ %>
+                <% if(selectedSubcategory===subcategory._id.toString()){ %>
+                <option value="<%= subcategory._id %>" selected>
+                    <%= subcategory.name %>
+                </option>
+                <% }else{ %>
+                <option value="<%= subcategory._id %>">
+                    <%= subcategory.name %>
+                </option>
+                <% } %>
+                <%} else{ %>
+                <%console.log("here in update... with product") %>
+                <%console.log(product.subcategory+'==='+subcategory._id.toString())%>
+                <% if(product.subcategory===subcategory._id.toString()){ %>
+                <option value="<%= subcategory._id %>" selected>
+                    <%= subcategory.name %>
+                </option>
+                <% }else{ %>
+                <option value="<%= subcategory._id %>">
+                    <%= subcategory.name %>
+                </option>
+                <% } %>
+                <% } %>
+                <% }) %>
+            </select>
+            <% } else { %>
+            <select name="singleCategory" id="<%= singleCategory._id %>" hidden disabled>
+                <% singleCategory.subcategory.forEach((subcategory)=>{ %>
+                <% if(selectedSubcategory===subcategory._id.toString()){ %>
+                <option value="<%= subcategory._id %>" selected>
+                    <%= subcategory.name %>
+                </option>
+                <% }else{ %>
+                <option value="<%= subcategory._id %>">
+                    <%= subcategory.name %>
+                </option>
+                <% } %>
+                <% }) %>
+            </select>
+            <% } %>
+            <% } %>
+            <% }) %>
+        </div>
+        <% } %>
+        <div class="form-control">
+            <label for="price">Price</label>
+            <input type="number" name="price" value="<%= oldInputs?oldInputs.price:product.price %>">
+        </div>
+        <div class="form-control">
+            <label for="description">Description</label>
+            <input type="text" name="description" rows="5"
+                value="<%= oldInputs?oldInputs.description:product.description %>">
+        </div>
+        <div class="form-control">
+            <label for="deposit">Deposit quantity</label>
+            <% if((typeof product.deposit)!=="string")product.deposit.forEach(element=>{ %>
+            <input type="hidden" value="<%=element.deposit%>" id="<%=element.color+element.size%>" />
+            <%})%>
+            <input type="number" name="deposit" value="<%= oldInputs?oldInputs.deposit:product.deposit %>">
+        </div>
+        <% if((oldInputs && oldInputs.backorder) || (product && product.backorder)){ %>
+        <div class="form-checkbox">
+            <input type="checkbox" name="backorder" checked>
+            <label for="backorder">Allow backorder</label>
+        </div>
+        <% } else{ %>
+        <div class="form-checkbox">
+            <input type="checkbox" name="backorder">
+            <label for="backorder">Allow backorder</label>
+        </div>
+        <% } %>
+        <% if((oldInputs && oldInputs.homepage) || (product && product.homepage)){ %>
+        <div class="form-checkbox">
+            <input type="checkbox" name="homepage" checked>
+            <label for="homepage">Show homepage</label>
+        </div>
+        <% } else{ %>
+        <div class="form-checkbox">
+            <input type="checkbox" name="homepage">
+            <label for="homepage">Show homepage</label>
+        </div>
+        <% } %>
+        <% if(logos.length>0){ %>
+        <label for="logos">Logos</label>
+        <div class="grid">
+            <% logos.forEach((logo)=>{ %>
+            <div>
+                <% if(oldInputs){ %>
+                <% if(oldInputs.selectedLogos && oldInputs.selectedLogos.filter((element)=>
+                                    element===logo._id.toString()).length>0){ %>
+                <input type="checkbox" name="logos" value="<%= logo._id %>" id="<%= logo._id %>" checked />
+                <% } else{ %>
+                <input type="checkbox" name="logos" value="<%= logo._id %>" id="<%= logo._id %>" />
+                <% } %>
+                <%}else{ %>
+                <% if(product.logos && product.logos.filter((element)=>
+                                element===logo._id.toString()).length>0){ %>
+                <input type="checkbox" name="logos" value="<%= logo._id %>" id="<%= logo._id %>" checked />
+                <% } else{ %>
+                <input type="checkbox" name="logos" value="<%= logo._id %>" id="<%= logo._id %>" />
+                <% } %>
+                <% } %>
+                <div class="card__image__logo">
+                    <img src="/<%= logo.images.key %>">
+                </div>
+            </div>
+            <% }) %>
+        </div>
+        <% } %>
+        <input type="hidden" name="id" value="<%= oldInputs?oldInputs._id:product._id %>">
+        <button type="submit" class="btn">Update</button>
+    </form>
+    <% } else { %>
+    <form method="POST" class="product-form" action="/admin/products" novalidate enctype="multipart/form-data">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="form-control">
+            <label for="title">Title</label>
+            <input type="text" name="title" value="<%= oldInputs.title %>">
+        </div>
+        <div class="form-control">
+            <label for="image">Image</label>
+            <input type="file" name="image" multiple>
+        </div>
+        <% if(category!==null && category!==undefined && category.length>0) { %>
+        <div class="form-control">
+            <label for="category">Choose a category:</label>
+            <select name="category" id="category" onchange="onChange()">
+                <% category.forEach((image)=>{ %>
+                <% console.log(selectedCategory+'==='+image._id) %>
+                <% if(selectedCategory===image._id.toString()){ %>
+                <option value="<%= image._id %>" selected>
+                    <%= image.name %>
+                </option>
+                <% } else { %>
+                <option value="<%= image._id %>">
+                    <%= image.name %>
+                </option>
+                <% } %>
+                <% }) %>
+            </select>
+        </div>
+        <% } %>
+        <%console.log('category') %>
+        <%console.log(category) %>
+        <%if(category && category.length>0){ %>
+        <div class="form-control">
+            <label for="subcategory">Choose a subcategory:</label>
+            <% category.forEach((singleCategory)=>{ %>
+            <% if(singleCategory.subcategory.length>0){ %>
+            <% console.log(singleCategory.subcategory.filter((element)=> element._id.toString()===selectedSubcategory)) %>
+            <% if(singleCategory.subcategory.filter((element)=> element._id.toString()===selectedSubcategory).length>0) { %>
+            <select name="singleCategory" id="<%= singleCategory._id %>">
+                <% singleCategory.subcategory.forEach((subcategory)=>{ %>
+                <% if(selectedSubcategory===subcategory._id.toString()){ %>
+                <option value="<%= subcategory._id %>" selected>
+                    <%= subcategory.name %>
+                </option>
+                <% }else{ %>
+                <option value="<%= subcategory._id %>">
+                    <%= subcategory.name %>
+                </option>
+                <% } %>
+                <% }) %>
+            </select>
+            <% } else { %>
+            <select name="singleCategory" id="<%= singleCategory._id %>" hidden disabled>
+                <% singleCategory.subcategory.forEach((subcategory)=>{ %>
+                <% if(selectedSubcategory===subcategory._id.toString()){ %>
+                <option value="<%= subcategory._id %>" selected>
+                    <%= subcategory.name %>
+                </option>
+                <% }else{ %>
+                <option value="<%= subcategory._id %>">
+                    <%= subcategory.name %>
+                </option>
+                <% } %>
+                <% }) %>
+            </select>
+            <% } %>
+            <% } %>
+            <% }) %>
+        </div>
+        <% } %>
+        <!-- <input type="text" name="imageUrl" value="<%= oldInputs.imageUrl %>"> -->
+        <div class="form-control">
+            <label for="price">Price</label>
+            <input type="number" name="price" value="<%= oldInputs.price %>">
+        </div>
+        <div class="form-control">
+            <label for="description">Description</label>
+            <input type="text" name="description" rows="5" value="<%= oldInputs.description %>">
+        </div>
+        <div class="form-control">
+            <label for="deposit">Deposit quantity</label>
+            <input type="number" name="deposit" value="<%= oldInputs.deposit %>">
+        </div>
+        <% console.log(oldInputs.backorder) %>
+        <% if(oldInputs.backorder){ %>
+        <div class="form-checkbox">
+            <input type="checkbox" name="backorder" checked>
+            <label for="backorder">Allow backorder</label>
+        </div>
+        <% } else{ %>
+        <div class="form-checkbox">
+            <input type="checkbox" name="backorder">
+            <label for="backorder">Allow backorder</label>
+        </div>
+        <% } %>
+        <% if(oldInputs.homepage){ %>
+        <div class="form-checkbox">
+            <input type="checkbox" name="homepage" checked>
+            <label for="homepage">Show homepage</label>
+        </div>
+        <% } else{ %>
+        <div class="form-checkbox">
+            <input type="checkbox" name="homepage">
+            <label for="homepage">Show homepage</label>
+        </div>
+        <% } %>
+        <% if(logos.length>0){ %>
+        <label for="logos">Logos</label>
+        <div class="grid">
+            <% logos.forEach((logo)=>{ %>
+            <div>
+                <% if(oldInputs.selectedLogos && oldInputs.selectedLogos.filter((element)=>
+                        element===logo._id.toString()).length>0){ %>
+                <input type="checkbox" name="logos" value="<%= logo._id %>" id="<%= logo._id %>" checked />
+                <% } else{ %>
+                <input type="checkbox" name="logos" value="<%= logo._id %>" id="<%= logo._id %>" />
+                <% } %>
+                <div class="card__image__logo">
+                    <img src="/<%= logo.images.key %>">
+                </div>
+            </div>
+            <% }) %>
+        </div>
+        <% } %>
+        <button type="submit" class="btn">
+            Add
+        </button>
+    </form>
+    <% } %>
+
+    <script>
+        const startSub = document.getElementsByName("singleCategory");
+        if (startSub.length > 0) {
+            let isEdit = false;
+            startSub.forEach((element) => {
+                if (!element.hidden) {
+                    console.log('edit page => do not set base value');
+                    isEdit = true;
+                }
+            })
+            if (!isEdit) {
+                startSub[0].hidden = "";
+                startSub[0].disabled = "";
+            }
+        }
+        const colors = document.getElementsByName("colors_display");
+        console.log(colors);
+        if (colors && colors.length > 0) colors[0].value = document.getElementById("colors").value;
+        let color = null;
+        let size = null;
+        if (document.getElementById("colors")) {
+            color = document.getElementById("colors").value;
+        }
+        if (document.getElementById("sizes")) {
+            size = document.getElementById("sizes").value;
+        }
+        console.log(color + size)
+        const deposit = document.getElementById(color + size);
+        if (deposit) {
+            document.getElementsByName("deposit")[0].value = deposit.value;
+        }
+        else {
+            const color = document.getElementById("colors");
+            const size = document.getElementById("sizes");
+            document.getElementsByName("deposit")[0].value = 0;
+        }
+
+        function onChange() {
+            console.log("changed!");
+            const value = document.getElementById("category").selectedIndex;
+            const category = document.getElementById("category").value;
+            console.log(value);
+            const selectedSubcategory = document.getElementById(category);
+            console.log(selectedSubcategory);//null if does not exist
+            const everySubcategory = document.getElementsByName("singleCategory");
+            console.log(everySubcategory);//empty if it does not exist(0)
+            selectedSubcategory.hidden = "";
+            selectedSubcategory.disabled = "";
+            everySubcategory.forEach((element) => {
+                if (element.value !== selectedSubcategory.value) {
+                    element.hidden = "hidden";
+                    element.disabled = "disabled";//this way it is not sent by the form
+                }
+            });
+        }
+
+        function onChangeColor() {
+            console.log("changed!");
+            const value = document.getElementById("colors").selectedIndex;
+            const color = document.getElementById("colors").value;
+            console.log(color)
+            console.log(value);
+            console.log(colors);
+            console.log(colors[value])
+            colors[0].value = color;
+            const size = document.getElementById("sizes").value;
+            const deposit = document.getElementById(color + size);
+            if (deposit) {
+                document.getElementsByName("deposit")[0].value = deposit.value;
+            }
+            else {
+                document.getElementsByName("deposit")[0].value = 0;
+            }
+        }
+        function onChangeSize() {
+            console.log("changed!");
+            const color = document.getElementById("colors").value;
+            const size = document.getElementById("sizes").value;
+            const deposit = document.getElementById(color + size);
+            if (deposit) {
+                document.getElementsByName("deposit")[0].value = deposit.value;
+            }
+            else {
+                document.getElementsByName("deposit")[0].value = 0;
+            }
+        }
+    </script>
+    <%- include('../includes/end.ejs') %>

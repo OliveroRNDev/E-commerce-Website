@@ -1,0 +1,17 @@
+<%- include("../includes/head.ejs") %>
+<%- include("../includes/navigation.ejs") %>
+
+<body>
+    <% console.log(reviews)%>
+    <% reviews.forEach(element=>{%>
+    <div
+        style="border-width: 2px; border-color: black; border-style: solid;margin: 10px; border-radius: 10px;padding: 4px;">
+        <div style="flex-direction: row;display: flex; justify-content: space-between;">
+            <h1><%=element.name?element.name:'John Doe'%></h1>
+            <h1><%=element.date?element.date.toUTCString():''%></h1>
+        </div>
+        <%=element.description%>
+    </div>
+    <%})%>
+</body>
+<%- include("../includes/end.ejs") %>

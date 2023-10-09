@@ -1,0 +1,68 @@
+<%- include("../includes/head.ejs") %>
+<%- include("../includes/navigation.ejs") %>
+
+<body>
+    <ul class="cart__item-list">
+        <% products.forEach((product)=>{ %>
+        <li class="cart__item">
+            <% const today=new Date(); if(today>=product.sale.startDate && today<=product.sale.endDate){ %>
+            <div style="display: flex; flex-direction: row;">
+                <h1 style="padding-right: 10px;">
+                    <%= product.title %>
+                </h1>
+                <!--
+                <h1 class="product-price-details" style="text-decoration: line-through; padding-right: 10px;">€
+                    <%= product.price %>
+                </h1>
+                <h1 class="product-price-details" style="color: red;">€
+                    <% if(product.sale.saleType==='Percentage'){ %>
+                    <%= product.price*(1-product.sale.sale/100) %>
+                    <% }else{ %>
+                    <%= product.price-product.sale.sale %>
+                    <% } %>
+                </h1>
+            -->
+            </div>
+            <% }else{ %>
+            <h2 class="product-price-details">€
+                <%= product.price %>
+            </h2>
+            <% } %>
+            <h2>Quantity: <%= product.quantity %>
+            </h2>
+        </li>
+
+
+        <% }) %>
+    </ul>
+    <% let sum=0; let today=new Date(); products.forEach((product)=>{
+            if(today>=product.sale.startDate && today<=product.sale.endDate){
+                if(product.sale.saleType==='Percentage'){
+                    sum=sum+product.price*(1-product.sale.sale/100)*product.quantity;
+                }
+                else{
+                    sum+=product.quantity*(product.price-product.sale.sale);
+                }
+            }else{
+                sum+=(product.price*product.quantity);
+            }
+            }) %>
+    <div class="centered">
+        <h1>Prezzo Totale: <%= sum %></h1>
+        <div class="centered">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button id="payBtn" class="btn">Pay</button>
+            <script src="https://js.stripe.com/v3/"></script>
+            <script>
+                let stripe = Stripe('pk_test_51MgoVtIcVikUiN6UvZeVEa9I5h1WJzZrekJkl5A0I2y4NIpwoCfAGsxwdByeJGpX4Gx0DQ3PwPWOblrwTtUuIbml00hmFJHyiI');
+                let butPay = document.getElementById('payBtn');
+                butPay.addEventListener('click', () => {
+                    stripe.redirectToCheckout({
+                        sessionId: '<%= sessionId %>'
+                    })
+                })
+            </script>
+        </div>
+    </div>
+</body>
+<%- include("../includes/end.ejs") %>

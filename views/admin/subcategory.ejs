@@ -1,0 +1,82 @@
+<%- include('../includes/head.ejs') %>
+
+<body>
+    <%- include('../includes/navigation.ejs') %>
+    <% if (error) { %>
+    <div class="user-message user-message--error">
+        <%= error %>
+    </div>
+    <% } %>
+    <form method="POST" class="product-form" action="/admin/subcategory" novalidate enctype="multipart/form-data">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="form-control">
+            <label for="image">Image</label>
+            <input type="file" name="image">
+        </div>
+        <% if(images!==null && images!==undefined && images.length>0) { %>
+        <div class="form-control">
+            <label for="category">Choose a category:</label>
+            <select name="category" id="category">
+                <% images.forEach((image)=>{  %>
+                <% if(oldInputs && oldInputs.category===image._id.toString()){ %>
+                <option value="<%= image._id %>" selected><%= image.name %></option>
+                <% }else{ %>
+                <option value="<%= image._id %>"><%= image.name %></option>
+                <% } %>
+                <% }) %>
+            </select>
+        </div>
+        <div class="form-control">
+            <label for="name">Name:</label>
+            <input type="text" name="name" value="<%= oldInputs?oldInputs.name:null %>">
+        </div>
+        <% } %>
+        <div class="form-control">
+            <label for="description">Description</label>
+            <input type="text" name="description" value="<%= oldInputs?oldInputs.description:null %>">
+        </div>
+        <button type="submit" class="btn">Add</button>
+    </form>
+    <% if(images!==null && images!==undefined && images.length>0) { %>
+
+    <% images.forEach((category)=>{ %>
+    <% if(category.subcategory.length>0) { %>
+    <h1 style="text-align: center;"><%= category.name %></h1>
+    <div class="grid">
+        <% category.subcategory.forEach((image)=>{ %>
+
+        <article class="card product-item">
+            <header class="card__header">
+                <h1 class="product__title">
+                    <%= image.name %>
+                </h1>
+            </header>
+            <div class="card__image">
+                <img src="/<%= image.key %>">
+            </div>
+            <div class="card__content">
+                <p class="product__description">
+                    <%= image.description %>
+                </p>
+            </div>
+            <div class="card__actions">
+                <form method="POST" action="/admin/edit-subcategory/<%= image._id %>">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button class="btn">Edit</button>
+                </form>
+                <form method="POST" action="/admin/delete-subcategory/<%= image._id %>"
+                    onsubmit="return confirm('Do you really want to delete the subcategory? Every product in it will be lost');">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button class="btn danger">Delete</button>
+                </form>
+            </div>
+        </article>
+        <% }) %>
+    </div>
+    <% } %>
+    <% }) %>
+
+    <% } else { %>
+    <h1>No products found!</h1>
+    <% } %>
+    <%- include('../includes/end.ejs') %>

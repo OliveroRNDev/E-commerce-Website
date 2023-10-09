@@ -1,0 +1,39 @@
+<%- include("../includes/head.ejs") %>
+<%- include("../includes/navigation.ejs") %>
+
+<body>
+    <% if(products!==null && products!==undefined && products.length>0) { %>
+    <h1>My Products:</h1>
+    <p>
+        <% products.forEach((product)=>{ %>
+    <h2>
+        <%= product.title %>
+    </h2>
+    <h4>
+        <%= product.imageUrl %>
+    </h4>
+    <h4>
+        <%= product.price %>
+    </h4>
+    <h4>
+        <%= product.description %>
+    </h4>
+    <a href="/product-details/<%= product._id %>">Details</a>
+    <form method="POST" action="/cart">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button type="submit">Delete from cart</button>
+        <input type="hidden" name="delete" value="true">
+        <input type="hidden" name="productId" value="<%= product._id %>">
+    </form>
+    <% }) %>
+    </p>
+    <h1>Prezzo Totale: <%= totalPrice %></h1>
+    <form method="POST" action="/create-order">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button type="submit">Order Now</button>
+    </form>
+    <% } else { %>
+    <h1>No products found!</h1>
+    <% } %>
+</body>
+<%- include("../includes/end.ejs") %>

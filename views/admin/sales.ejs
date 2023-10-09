@@ -1,0 +1,65 @@
+<%- include('../includes/head.ejs') %>
+
+<body>
+    <%- include('../includes/navigation.ejs') %>
+    <% if (error) { %>
+    <div class="user-message user-message--error">
+        <%= error %>
+    </div>
+    <% } %>
+    <form method="POST" class="product-form" action="/admin/sales" novalidate>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="form-control">
+            <label for="name">Name</label>
+            <input type="text" name="name" value="<%= oldInputs?oldInputs.name:null %>" />
+        </div>
+        <div class="form-control">
+            <label for="startTime">Start time</label>
+            <input type="datetime-local" name="startDate" value="<%= oldInputs?oldInputs.startDate:null %>" />
+        </div>
+        <div class="form-control">
+            <label for="startTime">End time</label>
+            <input type="datetime-local" name="endDate" value="<%= oldInputs?oldInputs.endDate:null %>" />
+        </div>
+        <div class="form-control">
+            <select onchange="" name="saleType">
+                <% if(!oldInputs){ %>
+                <option selected>Percentage</option>
+                <option>Fixed</option>
+                <% }else if(oldInputs.saleType==='Percentage'){ %>
+                <option selected>Percentage</option>
+                <option>Fixed</option>
+                <% }else{ %>
+                <option>Percentage</option>
+                <option selected>Fixed</option>
+                <% } %>
+            </select>
+            <input type="number" name="sale" value="<%= oldInputs?oldInputs.sale:null %>" />
+        </div>
+        <button type="submit" class="btn">Add</button>
+
+        <% if(products.length>0){ %>
+        <div class="grid">
+            <% products.forEach((product)=>{ %>
+            <div>
+                <div style="flex-direction: row;">
+                    <% if(oldInputs && oldInputs.selectedProducts && oldInputs.selectedProducts.filter((prod)=>prod===product._id.toString())){ %>
+                    <input type="checkbox" name="product" value="<%= product._id %>" id="<%= product._id %>" checked />
+                    <% }else{ %>
+                    <input type="checkbox" name="product" value="<%= product._id %>" id="<%= product._id %>" />
+                    <% } %>
+                    <label for="product"><%= product.title %></label>
+                </div>
+                <div class="card__image__logo">
+                    <img src="/<%= product.imageUrl[0].key %>">
+                </div>
+            </div>
+            <% }) %>
+        </div>
+        <% }else{ %>
+        <h1>No products found!</h1>
+        <% } %>
+    </form>
+    </main>
+</body>
+<%- include('../includes/end.ejs') %>

@@ -1,0 +1,110 @@
+<%- include('../includes/head.ejs') %>
+
+<body>
+    <%- include('../includes/navigation.ejs') %>
+    <div class="card homepage-item">
+        <div class="slideshow-container-images">
+            <% let count=0; images.forEach((image)=>{ %>
+            <!-- Full-width images with number and caption text -->
+            <div class="mySlides fade" name="/<% image.images.key %>" id="<%= count %>">
+                <a href="//<%= image.images.link %>">
+                    <img src="/<%= image.images.key %>" style="width:100%">
+                </a>
+            </div>
+            <% count++;}) %>
+
+            <!-- Next and previous buttons -->
+            <a class="prev" onclick="showId(-1)">&#10094;</a>
+            <a class="next" onclick="showId(1)">&#10095;</a>
+        </div>
+    </div>
+    <form method="post" action="/" id="form">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="search-bar-div">
+            <input type="text" name="search" placeholder="Search.." class="search-bar"
+                value="<%= search? search:null %>">
+            <input type="image" src="/images/search.png" class="search-img" onclick="submitForm()">
+        </div>
+    </form>
+    <% if(products!==null && products!==undefined && products.length>0) { %>
+    <div class="grid">
+        <% products.forEach((product)=>{ %>
+        <article class="card product-item">
+            <% const today=new Date(); if(today>=product.sale.startDate && today<=product.sale.endDate){ %>
+            <img src="/images/sale.png">
+            <% } %>
+            <header class="card__header">
+                <h1 class="product__title">
+                    <%= product.title %>
+                </h1>
+            </header>
+            <div class="card__image">
+                <img src="/<%= product.imageUrl[0].key %>" alt="<%= product.title %>">
+            </div>
+            <div class="card__content">
+                <%if(today>=product.sale.startDate && today<=product.sale.endDate){ %>
+                <h2 class="product__price" style="text-decoration: line-through;">€
+                    <%= product.price %>
+                </h2>
+                <h2 class="product__price" style="color: red;">€
+                    <% if(product.sale.saleType==='Percentage'){ %>
+                    <%= product.price*(1-product.sale.sale/100) %>
+                    <% }else{ %>
+                    <%= product.price-product.sale.sale %>
+                    <% } %>
+                </h2>
+                <% }else{ %>
+                <h2 class="product__price">€
+                    <%= product.price %>
+                </h2>
+                <% } %>
+            </div>
+            <div class="card__actions">
+                <a href="/product-details/<%= product._id %>" class="btn">Details</a>
+                <a href="/review/<%= product._id %>" class="btn">Reviews</a>
+                <!--
+                <% if(isAuthenticated){ %>
+                <form method="POST" action="/cart">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button type="submit" class="btn">Add to Cart</button>
+                    <input type="hidden" name="productId" value="<%= product._id %>">
+                </form>
+                <% } %>
+            -->
+            </div>
+        </article>
+
+
+        <% }) %>
+    </div>
+    <% } %>
+    <script>
+        let slideIndex = 0;
+        let count = 0;
+        showFirst();
+        function showFirst() {
+            let slides = document.getElementsByClassName("mySlides");
+            count = slides.length;
+            for (let item of slides) {
+                if (item.id === String(0)) item.style.display = "block";
+                else item.style.display = "none";
+            }
+        }
+        function showId(n) {
+            if (n === "1") slideIndex++;
+            else slideIndex--;
+            let slides = document.getElementsByClassName("mySlides");
+            count = slides.length;
+            if (slideIndex >= count) slideIndex = 0;
+            if (slideIndex < 0) slideIndex = count - 1
+            for (let item of slides) {
+                if (item.id === String(slideIndex)) item.style.display = "block";
+                else item.style.display = "none";
+            }
+        }
+
+        function submitForm() {
+            document.getElementById("form").submit();
+        }
+    </script>
+    <%- include('../includes/end.ejs') %>

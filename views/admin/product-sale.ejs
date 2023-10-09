@@ -1,0 +1,269 @@
+<%- include('../includes/head.ejs') %>
+<main>
+
+    <body>
+        <%- include('../includes/navigation.ejs') %>
+        <div style="display: flex;flex-direction: row;">
+            <div class="wrapper">
+                <header>
+                    <h2>Price Range</h2>
+                    <p>Use slider or enter min and max price</p>
+                </header>
+                <div class="price-input">
+                    <div class="field">
+                        <span>Min</span>
+                        <input type="number" class="input-min" value="<%= rangeMin?rangeMin:0 %>">
+                    </div>
+                    <div class="separator">-</div>
+                    <div class="field">
+                        <span>Max</span>
+                        <input type="number" class="input-max" value="<%= rangeMax?rangeMax:10000 %>">
+                    </div>
+                </div>
+                <div class="slider">
+                    <div class="progress"></div>
+                </div>
+                <div class="range-slider">
+                    <input type="range" class="range-min" min="0" max="10000" value="<%= rangeMin?rangeMin:0 %>"
+                        step="100">
+                    <input type="range" class="range-max" min="0" max="10000" value="<%= rangeMax?rangeMax:10000 %>"
+                        step="100">
+                </div>
+                <form method="post" action="/admin/product-sale">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <input type="hidden" name="search" placeholder="Search.." class="search-bar"
+                        value="<%= search? search:null %>">
+                    <input type="hidden" name="range-min" min="0" max="10000" value="<%= rangeMin?rangeMin:0 %>"
+                        step="100">
+                    <input type="hidden" name="range-max" min="0" max="10000" value="<%= rangeMax?rangeMax:10000 %>"
+                        step="100">
+                    <button type="submit" class="btn" style="margin-top: 50px;">Update price range</button>
+                </form>
+            </div>
+            <div style="width: 100%;">
+                <form method="post" action="/admin/product-sale" id="form">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <div class="search-bar-div">
+                        <input type="text" name="search" placeholder="Search.." class="search-bar"
+                            value="<%= search? search:null %>">
+                        <input type="hidden" name="range-min" min="0" max="10000" value="<%= rangeMin?rangeMin:0 %>"
+                            step="100">
+                        <input type="hidden" name="range-max" min="0" max="10000" value="<%= rangeMax?rangeMax:10000 %>"
+                            step="100">
+                        <input type="image" src="/images/search.png" class="search-img" onclick="submitForm()">
+                    </div>
+                </form>
+                <% if(products!==null && products!==undefined && products.length>0) { %>
+                <div class="grid">
+                    <% products.forEach((product)=>{ %>
+                    <article class="card product-item">
+                        <% const today=new Date(); if(today>=product.sale.startDate && today<=product.sale.endDate){ %>
+                        <img src="/images/sale.png">
+                        <% } %>
+                        <header class="card__header">
+                            <h1 class="product__title">
+                                <%= product.title %>
+                            </h1>
+                        </header>
+                        <div class="card__image">
+                            <img src="/<%= product.imageUrl[0].key %>" alt="<%= product.title %>">
+                        </div>
+                        <div class="card__content">
+                            <%if(today>=product.sale.startDate && today<=product.sale.endDate){ %>
+                            <h2 class="product__price" style="text-decoration: line-through;">€
+                                <%= product.price %>
+                            </h2>
+                            <h2 class="product__price" style="color: red;">€
+                                <% if(product.sale.saleType==='Percentage'){ %>
+                                <%= product.price*(1-product.sale.sale/100) %>
+                                <% }else{ %>
+                                <%= product.price-product.sale.sale %>
+                                <% } %>
+                            </h2>
+                            <% }else{ %>
+                            <h2 class="product__price">€
+                                <%= product.price %>
+                            </h2>
+                            <% } %>
+                        </div>
+                        <div class="card__actions">
+                            <form method="POST" action="/admin/edit-products/<%= product._id %>">
+                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                <button class="btn">Edit product</button>
+                            </form>
+                            <form method="POST" action="/admin/delete-products/<%= product._id %>">
+                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                <button class="btn danger">Delete product</button>
+                            </form>
+                        </div>
+                    </article>
+
+
+                    <% }) %>
+                </div>
+                <% if(!isSearch){ %>
+                <% console.log('pages: '+page) %>
+                <section class="pagination">
+                    <% if(parseInt(page)>1) {%>
+                    <a href="/admin/product-sale/?page=<%= 1 %>" class="btn">
+                        <%= "<<" %>
+                    </a>
+                    <a href="/admin/product-sale/?page=<%= parseInt(page)-1 %>" class="btn">
+                        <%= "<" %>
+                    </a>
+                    <% } %>
+                    <% if(parseInt(page)-1>1) {%>
+                    ...
+                    <% } %>
+                    <% for(i=1;i<=pages;i++){ %>
+                    <% if(i===parseInt(page)){ %>
+                    <a href="/admin/product-sale/?page=<%= i %>" class="btn"
+                        style="pointer-events: none; cursor: default;">
+                        <%= i %>
+                    </a>
+                    <% }else if(i===parseInt(page)-1 || i===parseInt(page)+1){ %>
+                    <a href="/admin/product-sale/?page=<%= i %>" class="btn">
+                        <%= i %>
+                    </a>
+                    <% } %>
+                    <% } %>
+                    <% if(parseInt(page)+1<pages) {%>
+                    ...
+                    <% } %>
+                    <% if(parseInt(page)<pages) {%>
+                    <a href="/admin/product-sale/?page=<%= parseInt(page)+1 %>" class="btn">
+                        <%= ">" %>
+                    </a>
+                    <a href="/admin/product-sale/?page=<%= pages %>" class="btn">
+                        <%= ">>" %>
+                    </a>
+                    <% } %>
+                </section>
+                <%}else{ %>
+                <section class="pagination">
+                    <form method="post" action="/admin/product-sale">
+                        <input type="hidden" name="pastSearch" value="<%= search %>">
+                        <input type="hidden" name="isSearch" value="true">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <input type="hidden" name="search" placeholder="Search.." class="search-bar"
+                            value="<%= search? search:null %>">
+                        <input type="hidden" name="range-min" min="0" max="10000" value="<%= rangeMin?rangeMin:0 %>"
+                            step="100">
+                        <input type="hidden" name="range-max" min="0" max="10000" value="<%= rangeMax?rangeMax:10000 %>"
+                            step="100">
+                        <% if(parseInt(page)>1) {%>
+                        <button formaction="/admin/product-sale/?pageBefore=<%= 1 %>" class="btn" class="btn">
+                            <%= "<<" %>
+                        </button>
+                        <button formaction="/admin/product-sale/?pageBefore=<%= parseInt(page)-1 %>" class="btn"
+                            class="btn">
+                            <%= "<" %>
+                        </button>
+                        <% } %>
+                        <% if(parseInt(page)-1>1) {%>
+                        ...
+                        <% } %>
+                        <% for(i=1;i<=pages;i++){ %>
+                        <% if(i===parseInt(page)){ %>
+                        <button formaction="/admin/product-sale/?pageBefore=<%= i %>" class="btn"
+                            style="pointer-events: none; cursor: default;">
+                            <%= i %>
+                        </button>
+                        <% }else if(i===parseInt(page)-1 || i===parseInt(page)+1){ %>
+                        <button formaction="/admin/product-sale/?pageBefore=<%= i %>" class="btn">
+                            <%= i %>
+                        </button>
+                        <% } %>
+                        <% } %>
+                        <% if(parseInt(page)+1<pages) {%>
+                        ...
+                        <% } %>
+                        <% if(parseInt(page)<pages) {%>
+                        <button formaction="/admin/product-sale/?pageBefore=<%= parseInt(page)+1 %>" class="btn"
+                            class="btn">
+                            <%= ">" %>
+                        </button>
+                        <button formaction="/admin/product-sale/?pageBefore=<%= pages %>" class="btn" class="btn">
+                            <%= ">>" %>
+                        </button>
+                        <% } %>
+                    </form>
+                </section>
+                <% } %>
+            </div>
+        </div>
+
+        <% } else { %>
+        <h1 style="margin: 50px;">No products found!</h1>
+        <% } %>
+</main>
+<script>
+    function submitForm() {
+        document.getElementById("form").submit();
+    }
+
+    function setStartValues() {
+        let minVal = parseInt(rangeInput[0].value),
+            maxVal = parseInt(rangeInput[1].value);
+        if ((maxVal - minVal) < priceGap) {
+            if (e.target.className === "range-min") {
+                rangeInput[0].value = maxVal - priceGap
+            } else {
+                rangeInput[1].value = minVal + priceGap;
+            }
+        } else {
+            priceInput[0].value = minVal;
+            priceInput[1].value = maxVal;
+            rangeMin.forEach(element => element.value = minVal)
+            rangeMax.forEach(element => element.value = maxVal)
+            range.style.left = ((minVal / rangeInput[0].max) * 100) + "%";
+            range.style.right = 100 - (maxVal / rangeInput[1].max) * 100 + "%";
+        }
+    }
+    const rangeInput = document.querySelectorAll(".range-slider input"),
+        priceInput = document.querySelectorAll(".price-input input"),
+        range = document.querySelector(".slider .progress");
+    const rangeMin = document.getElementsByName("range-min");
+    const rangeMax = document.getElementsByName("range-max");
+    let priceGap = 10;
+    setStartValues();
+    priceInput.forEach(input => {
+        input.addEventListener("input", e => {
+            let minPrice = parseInt(priceInput[0].value),
+                maxPrice = parseInt(priceInput[1].value);
+
+            if ((maxPrice - minPrice >= priceGap) && maxPrice <= rangeInput[1].max) {
+                if (e.target.className === "input-min") {
+                    rangeInput[0].value = minPrice;
+                    range.style.left = ((minPrice / rangeInput[0].max) * 100) + "%";
+                } else {
+                    rangeInput[1].value = maxPrice;
+                    range.style.right = 100 - (maxPrice / rangeInput[1].max) * 100 + "%";
+                }
+            }
+        });
+    });
+    rangeInput.forEach(input => {
+        input.addEventListener("input", e => {
+            let minVal = parseInt(rangeInput[0].value),
+                maxVal = parseInt(rangeInput[1].value);
+            console.log('minVal: ' + rangeMin.value)
+            console.log('maxVal: ' + rangeMax.value)
+            if ((maxVal - minVal) < priceGap) {
+                if (e.target.className === "range-min") {
+                    rangeInput[0].value = maxVal - priceGap
+                } else {
+                    rangeInput[1].value = minVal + priceGap;
+                }
+            } else {
+                priceInput[0].value = minVal;
+                priceInput[1].value = maxVal;
+                rangeMin.forEach(element => element.value = minVal)
+                rangeMax.forEach(element => element.value = maxVal)
+                range.style.left = ((minVal / rangeInput[0].max) * 100) + "%";
+                range.style.right = 100 - (maxVal / rangeInput[1].max) * 100 + "%";
+            }
+        });
+    });
+</script>
+<%- include('../includes/end.ejs') %>

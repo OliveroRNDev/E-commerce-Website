@@ -1,0 +1,116 @@
+<header class="main-header">
+    <ul class="nav-ul">
+        <% if(userType!=='admin' ) { %>
+        <li>
+            <a href="/homepage" class="<% path === 'homepage'? 'active' : '' %>">Homepage</a>
+        </li>
+        <li>
+            <a href="/" class="<% path === 'shop'? 'active' : '' %>">Shop</a>
+            <div class="cbp-hrsub">
+                <div class="cbp-hrsub-inner">
+                    <div>
+                        <% if(categoryList && categoryList.length>0){ %>
+                        <% categoryList.forEach((element)=>{ %>
+                        <h4><a href="/category/<%= element._id %>"><%= element.name %></a></h4>
+                        <% if(element.subcategory && element.subcategory.length>0){ %>
+                        <ul class="subcat-ul">
+                            <% element.subcategory.forEach((subcategory)=>{ %>
+                            <li><a href="/subcategory/<%= subcategory._id %>"><%= subcategory.name %></a></li>
+                            <% }) %>
+                        </ul>
+                        <% } %>
+                        <!--
+                            <h4>Learning & Games</h4>
+                            <ul>
+                                <li><a href="#">Catch the Bullet</a></li>
+                                <li><a href="#">Snoopydoo</a></li>
+                            </ul>
+                            -->
+                        <% }) %>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <a href="/sales" class="<% path === 'sales'? 'active' : '' %>">Sales</a>
+        </li>
+        <% } %>
+        <% if(isAuthenticated) { %>
+        <% if(userType==='admin') { %>
+        <li>
+            <div class="dropdown-container">
+                <a href="/admin/products" class="<% path === 'admin-products'? 'active' : '' %>">Products</a>
+                <div class="dropdown">
+                    <div>
+                        <a href="/admin/add-product" class="<% path === 'add-product'? 'active' : '' %>">Add</a>
+                    </div>
+                    <div>
+                        <a href="/admin/product-sale" class="<% path === 'product-sales'? 'active' : '' %>">On sale</a>
+                    </div>
+                </div>
+        </li>
+        <li class="main-header__item">
+            <a href="/admin/homepage" class="<% path === 'homepage'? 'active' : '' %>">Homepage</a>
+        </li>
+        <li class="main-header__item">
+            <a href="/admin/category" class="<% path === 'category'? 'active' : '' %>">Category</a>
+        </li>
+        <li class="main-header__item">
+            <a href="/admin/subcategory" class="<% path === 'subcategory'? 'active' : '' %>">Subcategory</a>
+        </li>
+        <li class="main-header__item">
+            <a href="/admin/logos" class="<% path === 'logos'? 'active' : '' %>">Logos</a>
+        </li>
+        <li>
+            <div class="dropdown-container">
+                <a href="/admin/sales" class="<% path === 'sales'? 'active' : '' %>">Sales</a>
+                <div class="dropdown">
+                    <div>
+                        <a href="/admin/sales-list" class="<% path === 'sales'? 'active' : '' %>">Sales list</a>
+                    </div>
+                </div>
+            </div>
+        </li>
+        <!--
+            <li class="main-header__item">
+                <a href="/admin/sales" class="<% path === 'sales'? 'active' : '' %>">Sales</a>
+            </li>
+            <li class="main-header__item">
+                <a href="/admin/sales-list" class="<% path === 'sales'? 'active' : '' %>">Sales list</a>
+            </li>
+            -->
+        <% } else {%>
+        <li class="main-header__item">
+            <a href="/cart" class="<% path === 'cart'? 'active' : '' %>">Cart</a>
+        </li>
+        <li class="main-header__item">
+            <a href="/orders" class="<% path === 'orders'? 'active' : '' %>">Orders</a>
+        </li>
+        <% } %>
+        <% } %>
+        <% if(!isAuthenticated) { %>
+        <li>
+            <div class="dropdown-container">
+                <a href="/login" class="<% path === 'login'? 'active' : '' %>">Login</a>
+                <div class="dropdown">
+                    <div>
+                        <a href="/signup" class="<% path === 'signup'? 'active' : '' %>">Sign Up</a>
+                    </div>
+                    <div>
+                        <a href="/reset" class="<% path === 'signup'? 'active' : '' %>">Reset password</a>
+                    </div>
+                </div>
+            </div>
+        </li>
+        <% } else { %>
+        <li class="main-header__item">
+            <% console.log(csrfToken) %>
+            <form action="/logout" method="post">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit">Logout</button>
+            </form>
+        </li>
+        <% } %>
+    </ul>
+</header>

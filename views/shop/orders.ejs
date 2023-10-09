@@ -1,0 +1,44 @@
+<%- include("../includes/head.ejs") %>
+<%- include("../includes/navigation.ejs") %>
+
+<body>
+    <% if(products!==null && products!==undefined && products.length>0) { %>
+    <ul class="orders">
+        <% products.forEach((product)=>{ %>
+        <li class="orders__item">
+            <h1>Order - # <%= product._id %></h1>
+            <% if(product.cart!==null && product.cart!==undefined && product.cart.length>0) { %>
+            <ul class="orders__products">
+                <% product.cart.forEach((item)=>{ %>
+                <li class="orders__products-item">
+                    <div style="display: flex;justify-content: space-between;">
+                        <div>
+                            <%= item.title+" ("+item.quantity+")" %>
+                        </div>
+                        <%if(item.color!==null){%>
+                        <input type="color" value="<%=item.color%>" />
+                        <%}%>
+                    <% if(item.size!==null){%>
+                        Taglia: <%= item.size %>
+                        <%}%>
+                    <% if(!item.review){%>
+                        <form method="POST" action="/review/<%=item._id%>">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                            <input type="hidden" name="orderId" value="<%= product._id %>">
+                            <input type="hidden" name="color" value="<%= item.color %>">
+                            <input type="hidden" name="size" value="<%= item.size %>">
+                            <button type="submit" class="btn">Leave a review</button>
+                        </form>
+                        <%}%>
+                    </div>
+                </li>
+                <% })} %>
+            </ul>
+        </li>
+        <% }) %>
+    </ul>
+    <% } else { %>
+    <h1>No products found!</h1>
+    <% } %>
+</body>
+<%- include("../includes/end.ejs") %>

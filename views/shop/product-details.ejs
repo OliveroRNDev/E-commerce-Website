@@ -1,0 +1,201 @@
+<%- include("../includes/head.ejs") %>
+<%- include("../includes/navigation.ejs") %>
+
+<body>
+    <% if(product!==null && product!==undefined) { %>
+    <div class="product-item-details">
+        <div class="mini-image-container">
+            <% let count=0; product.imageUrl.forEach((image)=>{ %>
+            <!-- Full-width images with number and caption text -->
+            <div class="card__image__logo" name="/<% image.key %>" id="<%= count %>" onclick="showId('<%= count %>')">
+                <img src="/<%= image.key %>">
+            </div>
+            <% count++;}) %>
+        </div>
+        <div class="slideshow-container-details">
+            <% const today=new Date(); if(today>=product.sale.startDate && today<=product.sale.endDate){ %>
+            <img src="/images/sale.png">
+            <% } %>
+            <% count=0; product.imageUrl.forEach((image)=>{ %>
+            <!-- Full-width images with number and caption text -->
+            <div class="mySlides fade" name="<% image.key %>" id="<%= count %>">
+                <img src="/<%= image.key %>">
+            </div>
+            <% count++;}) %>
+        </div>
+        <div class="product-details-right">
+            <div class="product-title-details">
+                <%= product.title %>
+            </div>
+            <a href="/review/<%= product._id %>" style="width: fit-content;margin-top: 10px;margin-bottom: 10px;"
+                class="btn">Reviews</a>
+            <div style="display: flex; flex-direction: row;">
+                <% if(product.colors && product.colors.length>0){ %>
+                <select name="colors" id="colors" onchange="onChangeColor()">
+                    <%let count=0; product.colors.forEach(color=>{%>
+                    <option value="<%=color%>">
+                        <%=color%>
+                    </option>
+                    <%count++;})%>
+                </select>
+                <input type="color" name="colors_display" disabled />
+                <% } %>
+            </div>
+            <div style="display: flex; flex-direction: row;">
+                <% if(product.sizes && product.sizes.length>0){ %>
+                <select name="sizes" id="sizes" onchange="onChangeSize()">
+                    <%let count=0; product.sizes.forEach(size=>{%>
+                    <option value="<%=size%>">
+                        <%=size%>
+                    </option>
+                    <%count++;})%>
+                </select>
+                <% } %>
+            </div>
+            <%if(today>=product.sale.startDate && today<=product.sale.endDate){ %>
+            <div style="display: flex; flex-direction: row;">
+                <h2 class="product-price-details" style="text-decoration: line-through; padding-right: 10px;">€
+                    <%= product.price %>
+                </h2>
+                <h2 class="product-price-details" style="color: red;">€
+                    <% if(product.sale.saleType==='Percentage'){ %>
+                    <%= product.price*(1-product.sale.sale/100) %>
+                    <% }else{ %>
+                    <%= product.price-product.sale.sale %>
+                    <% } %>
+                </h2>
+            </div>
+            <% }else{ %>
+            <h2 class="product-price-details">€
+                <%= product.price %>
+            </h2>
+            <% } %>
+            <div class="product-title-details">Description</div>
+            <p class="product-description-details">
+                <%= product.description %>
+            </p>
+            <div style="display: flex; flex-direction: row; padding-bottom: 10px;">
+                <% logos.forEach((logo)=>{ %>
+                <div class="details-logo" name="<% logo.name %>">
+                    <img src="/<%= logo.images.key %>" title="<%= logo.description %>">
+                </div>
+                <% }) %>
+            </div>
+            <% if(isAuthenticated){ %>
+            <div>
+                <form method="POST" action="/cart">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button type="submit" class="btn">Add to Cart</button>
+                    <input type="hidden" name="productId" value="<%= product._id %>">
+                    <input type="hidden" name="colors_form" value="null">
+                    <input type="hidden" name="sizes_form" value="null">
+                </form>
+            </div>
+            <% } %>
+        </div>
+    </div>
+    <% } else { %>
+    <h1>Product not present!</h1>
+    <% } %>
+    <script>
+        let count = 0;
+        showFirst();
+        function showFirst() {
+            let slides = document.getElementsByClassName("mySlides");
+            let logos = document.getElementsByClassName("card__image__logo");
+            count = slides.length;
+            console.log(logos)
+            for (let item of slides) {
+                if (item.id === String(0)) item.style.display = "block";
+                else item.style.display = "none";
+            }
+            for (let item of logos) {
+                console.log(item)
+                if (item.id === String(0)) item.style.opacity = "1";
+                else item.style.opacity = "0.5";
+            }
+        }
+        function showId(n) {
+            console.log(n);
+            let slides = document.getElementsByClassName("mySlides");
+            let logos = document.getElementsByClassName("card__image__logo");
+            for (let item of slides) {
+                if (item.id === String(n)) item.style.display = "block";
+                else item.style.display = "none";
+            }
+            for (let item of logos) {
+                if (item.id === String(n)) item.style.opacity = "1";
+                else item.style.opacity = "0.5";
+            }
+        }
+        const colors = document.getElementsByName("colors_display");
+        const color_form = document.getElementsByName("colors_form");
+        const size_form = document.getElementsByName("sizes_form");
+        console.log(size_form);
+        console.log(color_form)
+        console.log(colors);
+        if (colors && colors.length > 0) {
+            colors[0].value = document.getElementById("colors").value;
+            color_form[0].value = document.getElementById("colors").value;
+            size_form[0].value = document.getElementById("sizes").value;
+        }
+        let color = null;
+        let size = null;
+        if (document.getElementById("colors")) {
+            color = document.getElementById("colors").value;
+        }
+        if (document.getElementById("sizes")) {
+            size = document.getElementById("sizes").value;
+        }
+        console.log(color + size)
+        /*
+        const deposit = document.getElementById(color + size);
+        if (deposit) {
+            document.getElementsByName("deposit")[0].value = deposit.value;
+        }
+        else {
+            const color = document.getElementById("colors");
+            const size = document.getElementById("sizes");
+            document.getElementsByName("deposit")[0].value = 0;
+        }
+        */
+
+        function onChangeColor() {
+            console.log("changed!");
+            const value = document.getElementById("colors").selectedIndex;
+            const color = document.getElementById("colors").value;
+            console.log(color)
+            console.log(value);
+            console.log(colors);
+            console.log(colors[value])
+            colors[0].value = color;
+            color_form[0].value = color;
+            const size = document.getElementById("sizes").value;
+            /*
+            const deposit = document.getElementById(color + size);
+            if (deposit) {
+                document.getElementsByName("deposit")[0].value = deposit.value;
+            }
+            else {
+                document.getElementsByName("deposit")[0].value = 0;
+            }
+            */
+        }
+        function onChangeSize() {
+            console.log("changed!");
+            const color = document.getElementById("colors").value;
+            const size = document.getElementById("sizes").value;
+            size_form[0].value = document.getElementById("sizes").value;
+            /*
+            const deposit = document.getElementById(color + size);
+            if (deposit) {
+                document.getElementsByName("deposit")[0].value = deposit.value;
+            }
+            else {
+                document.getElementsByName("deposit")[0].value = 0;
+            }
+            */
+        }
+    </script>
+</body>
+<%- include("../includes/end.ejs") %>
